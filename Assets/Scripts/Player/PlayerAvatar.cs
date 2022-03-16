@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Animations.Rigging;
+using Zenject;
 
 public class PlayerAvatar : MonoBehaviour {
     [SerializeField] private Animator _animator;
-    [SerializeField] private Transform _spine;
+    [SerializeField] private float _fallingDuration;
+    [SerializeField] private float _standingDuration;
     [SerializeField] private Ragdoll _ragdoll;
+    [SerializeField] private RigBuilder _rigBuilder;
+    [SerializeField] private MultiAimConstraint _torsoAim;
 
     private const string AutoPunchState = "AutoPunch";
     private const string ForwardRunState = "ForwardRun";
@@ -16,6 +18,14 @@ public class PlayerAvatar : MonoBehaviour {
     private int upperBodyId => _animator.GetLayerIndex("UpperBody");
     private int generalId => _animator.GetLayerIndex("General");
 
+    [Inject]
+    private void Constructor(Enemy enemy) {
+        var sourceObjects = _torsoAim.data.sourceObjects;
+        sourceObjects.SetTransform(0, enemy.transform);
+        _torsoAim.data.sourceObjects = sourceObjects;
+        _rigBuilder.Build();
+    }
+
     public void PlayAutoPunch() {
         EnableLayer(upperBodyId);
         _animator.Play(AutoPunchState, upperBodyId, 0f);
@@ -23,34 +33,35 @@ public class PlayerAvatar : MonoBehaviour {
 
     public void PlayMoveInDirection(Vector2 direction) {
         if (direction == Vector2.zero) {
+            DirectModelTo(Vector3.forward);
             DisableLayer(lowerBodyId);
             return;
         }
 
         EnableLayer(lowerBodyId);
+        DirectModelTo(direction.To3Dimentions());
         if (direction.y >= 0) {
             _animator.Play(ForwardRunState, lowerBodyId);
         }
         else {
             _animator.Play(BackwardRunState, lowerBodyId);
         }
-        DirectModelTo(direction.To3Dimentions());
     }
 
     public void FallDown() {
         _animator.enabled = false;
         _ragdoll.SaveBones();
         _ragdoll.Enable();
+        this.Invoke(() => StandUp(), _fallingDuration);
     }
 
     public void StandUp() {
         _ragdoll.Disable();
-        _ragdoll.LoadBones();
+        _ragdoll.LoadBonesSmooth(_standingDuration);
         _animator.enabled = true;
     }
 
     private void DirectModelTo(Vector3 direction) {
-        //direction = direction == Vector3.zero ? Vector3.forward : direction;
         Transform animatorTransform = _animator.transform;
         Quaternion targetQuaternion = Quaternion.LookRotation(direction.z * transform.TransformDirection(direction), Vector3.up);
         const float DeltaQuaternion = 0.1f;

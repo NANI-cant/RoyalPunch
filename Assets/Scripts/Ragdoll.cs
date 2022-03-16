@@ -9,8 +9,10 @@ public class Ragdoll : MonoBehaviour {
     [SerializeField] private List<Rigidbody> _bones;
 
     private bool _isActive = false;
+    private Coroutine _loadingBones;
 
-    private List<Transform> _savedBones = new List<Transform>();
+    private List<Vector3> _savedBonesPositions = new List<Vector3>();
+    private List<Quaternion> _savedBonesRotations = new List<Quaternion>();
 
     private void Start() {
         _isActive = _enableOnAwake;
@@ -44,38 +46,50 @@ public class Ragdoll : MonoBehaviour {
     }
 
     public void SaveBones() {
-        _savedBones = new List<Transform>();
+        _savedBonesPositions = new List<Vector3>();
+        _savedBonesRotations = new List<Quaternion>();
         foreach (var bone in _bones) {
-            _savedBones.Add(bone.transform);
+            _savedBonesPositions.Add(bone.transform.position);
+            _savedBonesRotations.Add(bone.transform.rotation);
         }
     }
 
     public void LoadBones() {
-        if (_bones.Count != _savedBones.Count) return;
+        if (_bones.Count != _savedBonesPositions.Count) return;
 
+        if (_loadingBones != null) {
+            StopCoroutine(_loadingBones);
+        }
         for (int i = 0; i < _bones.Count; i++) {
-            _bones[i].transform.position = _savedBones[i].transform.position;
-            _bones[i].transform.rotation = _savedBones[i].transform.rotation;
-            _bones[i].transform.localScale = _savedBones[i].transform.localScale;
+            _bones[i].transform.position = _savedBonesPositions[i];
+            _bones[i].transform.rotation = _savedBonesRotations[i];
         }
     }
 
     public void LoadBonesSmooth(float duration) {
-        if (_bones.Count != _savedBones.Count) return;
+        if (_bones.Count != _savedBonesPositions.Count) return;
 
-        StartCoroutine(ExecuteSmoothLoading(duration));
+        if (_loadingBones != null) {
+            StopCoroutine(_loadingBones);
+        }
+        _loadingBones = StartCoroutine(ExecuteSmoothLoading(duration));
     }
 
     private IEnumerator ExecuteSmoothLoading(float duration) {
         float passedTime = 0;
+        float velocity = 1 / duration;
+
+        List<Vector3> startPositions = new List<Vector3>();
+        List<Quaternion> startRotations = new List<Quaternion>();
+        for (int i = 0; i < _bones.Count; i++) {
+            startPositions.Add(_bones[i].transform.position);
+            startRotations.Add(_bones[i].transform.rotation);
+        }
 
         while (passedTime < duration) {
             for (int i = 0; i < _bones.Count; i++) {
-                Vector3 transitionVelocity = (_savedBones[i].position - _bones[i].transform.position) / duration;
-                float rotationVelocity = 1 / duration;
-
-                _bones[i].transform.Translate(transitionVelocity * Time.deltaTime);
-                _bones[i].transform.rotation = Quaternion.Lerp(_bones[i].transform.rotation, _savedBones[i].rotation, rotationVelocity * Time.deltaTime);
+                _bones[i].transform.position = Vector3.Lerp(startPositions[i], _savedBonesPositions[i], velocity * passedTime);
+                _bones[i].transform.rotation = Quaternion.Lerp(startRotations[i], _savedBonesRotations[i], velocity * passedTime);
             }
             passedTime += Time.deltaTime;
             yield return new WaitForEndOfFrame();
