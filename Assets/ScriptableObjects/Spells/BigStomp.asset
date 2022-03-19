@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 389cadb80f14ad34eb5749779e06a77c, type: 3}
   m_Name: BigStomp
   m_EditorClassIdentifier: 
-  _shouldDrawGizmos: 1
+  _shouldDrawGizmos: 0
   _damage: 0
   _whatIsDamageable:
     serializedVersion: 2

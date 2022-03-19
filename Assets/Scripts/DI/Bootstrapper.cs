@@ -12,9 +12,9 @@ public class Bootstrapper : MonoInstaller {
     [SerializeField] private Camera _mainCamera;
 
     public override void InstallBindings() {
-        RegisterInputService();
+        IInputService inputService = RegisterInputService();
 
-        //RegisterInstance<Game>(new Game());
+        RegisterInstance<Game>(new Game(_startPanel, inputService));
         RegisterInstance<Camera>(_mainCamera);
         RegisterInstance<Player>(_player);
         RegisterInstance<Enemy>(_enemy);
@@ -27,11 +27,12 @@ public class Bootstrapper : MonoInstaller {
             .NonLazy();
     }
 
-    private void RegisterInputService() {
+    private IInputService RegisterInputService() {
         IInputService instance = new JoystickInput(_joystick);
         Container
             .BindInstance<IInputService>(instance)
             .AsSingle()
             .NonLazy();
+        return instance;
     }
 }

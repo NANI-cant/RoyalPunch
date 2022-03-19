@@ -1,15 +1,17 @@
-using System;
-using UnityEngine;
-using UnityEngine.Events;
+using UI;
 
 namespace Infrastructure {
     public class GamePreparingState : IEnterState, IExitState {
-        private const bool ShouldLog = false;
+        private const bool ShouldLog = true;
 
         private GameStateMachine _stateMachine;
+        private StartPanel _startPanel;
+        private IInputService _inputService;
 
-        public GamePreparingState(GameStateMachine stateMachine) {
+        public GamePreparingState(GameStateMachine stateMachine, StartPanel startPanel, IInputService inputService) {
             _stateMachine = stateMachine;
+            _startPanel = startPanel;
+            _inputService = inputService;
         }
 
         private void TranslateToGameplay() {
@@ -18,10 +20,15 @@ namespace Infrastructure {
 
         public void Enter() {
             this.Log(this + " Enter", ShouldLog);
+            _startPanel.OnHitPlayButton += TranslateToGameplay;
+            _inputService.Disable();
+            _startPanel.gameObject.SetActive(true);
         }
 
         public void Exit() {
             this.Log(this + " Exit", ShouldLog);
+            _startPanel.OnHitPlayButton -= TranslateToGameplay;
+            _startPanel.gameObject.SetActive(false);
         }
     }
 }

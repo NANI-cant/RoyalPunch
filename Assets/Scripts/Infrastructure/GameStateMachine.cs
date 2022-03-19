@@ -1,17 +1,16 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
+using UI;
 
 namespace Infrastructure {
     public class GameStateMachine : IStateMachine {
         private readonly Dictionary<Type, IState> _states;
         private IState _activeState;
 
-        public GameStateMachine() {
+        public GameStateMachine(StartPanel startPanel, IInputService inputService) {
             _states = new Dictionary<Type, IState> {
-                [typeof(GamePreparingState)] = new GamePreparingState(this),
+                [typeof(GamePreparingState)] = new GamePreparingState(this, startPanel, inputService),
+                [typeof(GameplayState)] = new GameplayState(this, inputService),
             };
         }
 

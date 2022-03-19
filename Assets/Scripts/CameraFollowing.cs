@@ -13,7 +13,12 @@ public class CameraFollowing : MonoBehaviour {
     [SerializeField] private Vector3 _followOffset;
 
 #if UNITY_EDITOR
+    [Header("Debug")]
+    [SerializeField] private bool _isValidate;
+
     private void OnValidate() {
+        if (!_isValidate) return;
+        
         if (_lookAt != null)
             RotateTo(_lookAt.position);
         if (_followIt != null)

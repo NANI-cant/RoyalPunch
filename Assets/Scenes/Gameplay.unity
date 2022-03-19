@@ -355,8 +355,8 @@ MonoBehaviour:
   _joystick: {fileID: 1454838081}
   _player: {fileID: 7329833006156172212}
   _enemy: {fileID: 4712750441626840238}
-  _startPanel: {fileID: 0}
-  _mainCamera: {fileID: 0}
+  _startPanel: {fileID: 690883542}
+  _mainCamera: {fileID: 1687258584}
 --- !u!1001 &443858074
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -839,8 +839,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 690883541}
-  - component: {fileID: 690883542}
   - component: {fileID: 690883543}
+  - component: {fileID: 690883542}
   m_Layer: 5
   m_Name: StartPanel
   m_TagString: Untagged
@@ -1235,7 +1235,7 @@ Canvas:
   m_GameObject: {fileID: 1340954646}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 1
+  m_RenderMode: 0
   m_Camera: {fileID: 1687258584}
   m_PlaneDistance: 2
   m_PixelPerfect: 0
@@ -1630,12 +1630,12 @@ PrefabInstance:
     - target: {fileID: 1331540221253186160, guid: 0241e1941f3863e4cbf8d144a4b94418,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9673613
+      value: 0.97611105
       objectReference: {fileID: 0}
     - target: {fileID: 1331540221253186160, guid: 0241e1941f3863e4cbf8d144a4b94418,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.2534013
+      value: 0.21727236
       objectReference: {fileID: 0}
     - target: {fileID: 1331540221253186160, guid: 0241e1941f3863e4cbf8d144a4b94418,
         type: 3}

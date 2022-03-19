@@ -9,16 +9,19 @@ namespace UI {
         [SerializeField] private Button _healthButton;
         [SerializeField] private Button _strengthButton;
         [SerializeField] private Button _startGameButton;
-        [SerializeField] private UnityAction _startGameAction;
 
-        public UnityAction StartGameAction => _startGameAction;
+        public UnityAction OnHitPlayButton;
 
         private void OnEnable() {
-            _startGameButton.onClick.AddListener(_startGameAction);
+            _startGameButton.onClick.AddListener(InvokeStartAction);
         }
 
         private void OnDisable() {
-            _startGameButton.onClick.RemoveListener(_startGameAction);
+            _startGameButton.onClick.RemoveListener(InvokeStartAction);
+        }
+
+        private void InvokeStartAction() {
+            OnHitPlayButton?.Invoke();
         }
     }
 }
