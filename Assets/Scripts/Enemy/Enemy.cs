@@ -36,9 +36,6 @@ public class Enemy : MonoBehaviour {
     [Inject]
     private void Constructor(Player player) {
         _lookAtIt = player.transform;
-    }
-
-    private void Awake() {
         _damageabler = GetComponent<IDamageable>();
         _deathabler = GetComponent<IDeathable>();
         _rotator = GetComponent<IRotateable>();

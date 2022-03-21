@@ -2,16 +2,18 @@ using UI;
 
 namespace Infrastructure {
     public class GamePreparingState : IEnterState, IExitState {
-        private const bool ShouldLog = true;
+        private const bool ShouldLog = false;
 
         private GameStateMachine _stateMachine;
         private StartPanel _startPanel;
         private IInputService _inputService;
+        private Game _game;
 
-        public GamePreparingState(GameStateMachine stateMachine, StartPanel startPanel, IInputService inputService) {
+        public GamePreparingState(GameStateMachine stateMachine, Game game, StartPanel startPanel, IInputService inputService) {
             _stateMachine = stateMachine;
             _startPanel = startPanel;
             _inputService = inputService;
+            _game = game;
         }
 
         private void TranslateToGameplay() {

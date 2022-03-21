@@ -9,9 +9,8 @@ namespace Infrastructure {
 
         private GameStateMachine _stateMachine;
 
-        public Game(StartPanel startPanel, IInputService inputService) {
-            _stateMachine = new GameStateMachine(startPanel, inputService);
-
+        public Game(Player player, Enemy enemy, StartPanel startPanel, IInputService inputService) {
+            _stateMachine = new GameStateMachine(this, player, enemy, startPanel, inputService);
             _stateMachine.TranslateTo<GamePreparingState>();
         }
     }

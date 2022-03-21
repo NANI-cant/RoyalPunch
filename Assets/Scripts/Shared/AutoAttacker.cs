@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class AutoAttacker : MonoBehaviour, IAttackable {
@@ -11,6 +9,8 @@ public class AutoAttacker : MonoBehaviour, IAttackable {
     [SerializeField] private LayerMask _enemieLayer;
     [SerializeField] private Vector3 _attackCenter = Vector3.zero;
     [SerializeField] private Vector3 _attackSize = Vector3.one;
+    [Header("Debug")]
+    [SerializeField] private bool _shouldLog = false;
 
     private float _savedAttackTime = float.NegativeInfinity;
     private bool _debugShouldFlush = false;
@@ -37,8 +37,16 @@ public class AutoAttacker : MonoBehaviour, IAttackable {
         this.Invoke(() => _debugShouldFlush = false, _delay + (_timeBetweenAttacks - _delay) / 3);
     }
 
+    public void Disable() {
+        enabled = false;
+    }
+
+    public void Enable() {
+        enabled = true;
+    }
+
     private void DoDamageTo(List<IDamageable> damageables) {
-        Debug.Log("Bang");
+        this.Log("Bang", when: _shouldLog);
         foreach (var damageable in damageables) {
             damageable.TakeDamage(_damage);
         }

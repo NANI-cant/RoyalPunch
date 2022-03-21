@@ -715,6 +715,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy
       objectReference: {fileID: 0}
+    - target: {fileID: 5907425411095752327, guid: 66f42ff46e304b845a440a248f715a85,
+        type: 3}
+      propertyPath: _damage
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7722604104864858544, guid: 66f42ff46e304b845a440a248f715a85,
         type: 3}
       propertyPath: _lookAtIt
@@ -989,18 +994,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 448389131, guid: 85d0bb1c7ad627940874cabe0a1d55a2, type: 3}
-      propertyPath: _fallingDuration
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 448389131, guid: 85d0bb1c7ad627940874cabe0a1d55a2, type: 3}
-      propertyPath: _standingDuration
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1129846376, guid: 85d0bb1c7ad627940874cabe0a1d55a2, type: 3}
-      propertyPath: _duration
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 7329833006016036622, guid: 85d0bb1c7ad627940874cabe0a1d55a2,
         type: 3}
       propertyPath: m_RootOrder

@@ -13,4 +13,12 @@ public class PlayerStunner : MonoBehaviour, IStunnable {
         OnStunStart?.Invoke();
         this.Invoke(() => OnStunEnd?.Invoke(), _duration);
     }
+
+    public void Disable() {
+        enabled = false;
+    }
+
+    public void Enable() {
+        enabled = true;
+    }
 }

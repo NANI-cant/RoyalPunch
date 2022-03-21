@@ -1,4 +1,3 @@
-using System;
 using Infrastructure;
 using UI;
 using UnityEngine;
@@ -17,25 +16,17 @@ public class Bootstrapper : MonoInstaller {
     [SerializeField] private Camera _mainCamera;
 
     public override void InstallBindings() {
-        IInputService inputService = RegisterInputService();
+        IInputService inputService = RegisterInstanceSingle<IInputService>(new JoystickInput(_joystick));
 
-        RegisterInstance<Game>(new Game(_startPanel, inputService));
-        RegisterInstance<Camera>(_mainCamera);
-        RegisterInstance<Player>(_player);
-        RegisterInstance<Enemy>(_enemy);
+        RegisterInstanceSingle<Camera>(_mainCamera);
+        RegisterInstanceSingle<Player>(_player);
+        RegisterInstanceSingle<Enemy>(_enemy);
+        RegisterInstanceSingle<Game>(new Game(_player, _enemy, _startPanel, inputService));
     }
 
-    private void RegisterInstance<T>(T instance) {
+    private T RegisterInstanceSingle<T>(T instance) {
         Container
             .BindInstance<T>(instance)
-            .AsSingle()
-            .NonLazy();
-    }
-
-    private IInputService RegisterInputService() {
-        IInputService instance = new JoystickInput(_joystick);
-        Container
-            .BindInstance<IInputService>(instance)
             .AsSingle()
             .NonLazy();
         return instance;
