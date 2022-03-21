@@ -15,4 +15,12 @@ public class EnemyStunner : MonoBehaviour, IStunnable {
             OnStunEnd?.Invoke();
         }, _duration);
     }
+
+    public void Disable() {
+        enabled = false;
+    }
+
+    public void Enable() {
+        enabled = true;
+    }
 }

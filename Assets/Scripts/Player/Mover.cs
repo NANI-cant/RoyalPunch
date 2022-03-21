@@ -26,6 +26,14 @@ public class Mover : MonoBehaviour, IMovable, IRotateable {
         _transform.LookAt(point);
     }
 
+    public void Disable() {
+        enabled = false;
+    }
+
+    public void Enable() {
+        enabled = true;
+    }
+
     private void OnDrawGizmos() {
         Gizmos.color = Color.black;
         Gizmos.DrawLine(transform.position, transform.position + _gizmosDrawDirection * 3f);

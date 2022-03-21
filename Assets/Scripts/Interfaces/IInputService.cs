@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
 
-public interface IInputService {
+public interface IInputService : IEnable, IDisable {
     Vector2 Direction { get; }
 }

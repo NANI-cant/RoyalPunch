@@ -39,9 +39,7 @@ public class Player : MonoBehaviour {
     private void Constructor(IInputService input, Enemy enemy) {
         _input = input;
         _lookAtThis = enemy.transform;
-    }
 
-    private void Awake() {
         _mover = GetComponent<IMovable>();
         _rotator = GetComponent<IRotateable>();
         _attacker = GetComponent<IAttackable>();
@@ -58,11 +56,13 @@ public class Player : MonoBehaviour {
     private void OnEnable() {
         _stunnabler.OnStunStart += _translationToStunned;
         _stunnabler.OnStunEnd += _translationToFree;
+        _deathabler.OnDeath += OnDeath;
     }
 
     private void OnDisable() {
         _stunnabler.OnStunStart -= _translationToStunned;
         _stunnabler.OnStunEnd -= _translationToFree;
+        _deathabler.OnDeath -= OnDeath;
     }
 
     private void Update() {
@@ -96,6 +96,10 @@ public class Player : MonoBehaviour {
                     _avatar.FallDown();
                     break;
                 }
+            case PlayerState.Death: {
+                    DisableComponents();
+                    break;
+                }
             default: break;
         }
     }
@@ -109,5 +113,29 @@ public class Player : MonoBehaviour {
                 }
             default: break;
         }
+    }
+
+    private void OnDeath() => TranslateTo(PlayerState.Death);
+
+    private void OnStunStart() => TranslateTo(PlayerState.Stunned);
+
+    private void OnStunEnd() => TranslateTo(PlayerState.Free);
+
+    private void DisableComponents() {
+        _attacker.Disable();
+        _mover.Disable();
+        _rotator.Disable();
+        _damageabler.Disable();
+        _deathabler.Disable();
+        _stunnabler.Disable();
+    }
+
+    private void EnableComponents() {
+        _attacker.Enable();
+        _mover.Enable();
+        _rotator.Enable();
+        _damageabler.Enable();
+        _deathabler.Enable();
+        _stunnabler.Enable();
     }
 }

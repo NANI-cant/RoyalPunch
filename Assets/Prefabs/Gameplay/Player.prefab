@@ -249,7 +249,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d40bcc2dd266e5499674ae89815efe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 20
+  _maxHealth: 4
+  _shouldLog: 0
 --- !u!114 &448389131
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -263,8 +264,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animator: {fileID: 6219479477338275687}
-  _fallingDuration: 2
-  _standingDuration: 2
+  _fallingDuration: 1.5
+  _standingDuration: 1
   _ragdoll: {fileID: 2057074000106469523}
   _rigBuilder: {fileID: 7329833006156172217}
   _torsoAim: {fileID: 7566487}
@@ -280,7 +281,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43079aedcbc65e54b941b4f8bc5faee0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _duration: 5
+  _duration: 2
 --- !u!1001 &520889270464201462
 PrefabInstance:
   m_ObjectHideFlags: 0

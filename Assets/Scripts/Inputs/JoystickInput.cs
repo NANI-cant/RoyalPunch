@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class JoystickInput : IInputService {
     private Joystick _joystick;
@@ -10,4 +8,13 @@ public class JoystickInput : IInputService {
     public JoystickInput(Joystick joystick) {
         _joystick = joystick;
     }
+
+    public void Enable() {
+        _joystick.gameObject.SetActive(true);
+    }
+
+    public void Disable() {
+        _joystick.gameObject.SetActive(false);
+    }
+
 }
