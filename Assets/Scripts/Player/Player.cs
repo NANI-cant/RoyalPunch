@@ -1,13 +1,7 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using Zenject;
-
-enum PlayerState {
-    Free,
-    Stunned,
-    Death,
-}
 
 [RequireComponent(typeof(IMovable))]
 [RequireComponent(typeof(IRotateable))]
@@ -16,12 +10,10 @@ enum PlayerState {
 [RequireComponent(typeof(IDeathable))]
 [RequireComponent(typeof(IStunnable))]
 [RequireComponent(typeof(PlayerAvatar))]
-public class Player : MonoBehaviour {
+public class Player : MonoBehaviour, IStateMachine {
     [SerializeField] private bool _shouldLog;
 
     private Transform _lookAtThis;
-    private PlayerState _currentState;
-
     private IInputService _input;
     private IMovable _mover;
     private IRotateable _rotator;
@@ -31,9 +23,8 @@ public class Player : MonoBehaviour {
     private IStunnable _stunnabler;
     private PlayerAvatar _avatar;
 
-    private UnityAction _translationToFree;
-    private UnityAction _translationToDeath;
-    private UnityAction _translationToStunned;
+    private IState _activeState;
+    private Dictionary<Type, IState> _states = new Dictionary<Type, IState>();
 
     [Inject]
     private void Constructor(IInputService input, Enemy enemy) {
@@ -48,94 +39,54 @@ public class Player : MonoBehaviour {
         _stunnabler = GetComponent<IStunnable>();
         _avatar = GetComponent<PlayerAvatar>();
 
-        _translationToFree = () => TranslateTo(PlayerState.Free);
-        _translationToDeath = () => TranslateTo(PlayerState.Death);
-        _translationToStunned = () => TranslateTo(PlayerState.Stunned);
+        _states = new Dictionary<Type, IState> {
+            [typeof(PlayerFreeState)] = new PlayerFreeState(this, _input, _avatar, _attacker, _rotator, _mover, _lookAtThis, _stunnabler),
+            [typeof(PlayerStunState)] = new PlayerStunState(this, _avatar, _stunnabler),
+            [typeof(PlayerLoseState)] = new PlayerLoseState(this),
+            [typeof(PlayerWinState)] = new PlayerWinState(this),
+        };
+        TranslateTo<PlayerFreeState>();
     }
 
     private void OnEnable() {
-        _stunnabler.OnStunStart += _translationToStunned;
-        _stunnabler.OnStunEnd += _translationToFree;
         _deathabler.OnDeath += OnDeath;
     }
 
     private void OnDisable() {
-        _stunnabler.OnStunStart -= _translationToStunned;
-        _stunnabler.OnStunEnd -= _translationToFree;
         _deathabler.OnDeath -= OnDeath;
     }
 
     private void Update() {
-        if (_currentState == PlayerState.Free) {
-            _avatar.PlayMoveInDirection(_input.Direction);
-        }
+        _activeState?.Do(
+            () => ((IUpdateState)_activeState).Update(),
+            when: _activeState is IUpdateState
+        );
     }
 
     private void FixedUpdate() {
-        if (_currentState == PlayerState.Free) {
-            _mover.Move(_input.Direction.To3Dimentions());
-            _rotator.RotateTo(_lookAtThis.position);
-
-            if (_attacker.CouldAttack) {
-                _attacker.Attack();
-                _avatar.PlayAutoPunch();
-            }
-        }
+        _activeState?.Do(
+            () => ((IFixedUpdateState)_activeState).FixedUpdate(),
+            when: _activeState is IFixedUpdateState
+        );
     }
 
-    private void TranslateTo(PlayerState state) {
-        ExitState(_currentState);
-        _currentState = state;
-        EnterState(_currentState);
+    public void TranslateTo<TState>() where TState : IState {
+        _activeState?.Do(
+            () => {
+                ((IExitState)_activeState).Exit();
+                this.Log("Exit " + _activeState, _shouldLog);
+            },
+            when: _activeState is IExitState
+        );
+        _activeState = _states[typeof(TState)];
+        _activeState.Do(
+            () => {
+                ((IEnterState)_activeState).Enter();
+                this.Log("Enter " + _activeState, _shouldLog);
+            },
+            when: _activeState is IEnterState
+        );
     }
 
-    private void EnterState(PlayerState state) {
-        this.Log("Enter " + state, _shouldLog);
-        switch (state) {
-            case PlayerState.Stunned: {
-                    _avatar.FallDown();
-                    break;
-                }
-            case PlayerState.Death: {
-                    DisableComponents();
-                    break;
-                }
-            default: break;
-        }
-    }
-
-    private void ExitState(PlayerState state) {
-        this.Log("Exit " + state, _shouldLog);
-        switch (state) {
-            case PlayerState.Stunned: {
-                    _avatar.StandUp();
-                    break;
-                }
-            default: break;
-        }
-    }
-
-    private void OnDeath() => TranslateTo(PlayerState.Death);
-
-    private void OnStunStart() => TranslateTo(PlayerState.Stunned);
-
-    private void OnStunEnd() => TranslateTo(PlayerState.Free);
-
-    private void DisableComponents() {
-        _attacker.Disable();
-        _mover.Disable();
-        _rotator.Disable();
-        _damageabler.Disable();
-        _deathabler.Disable();
-        _stunnabler.Disable();
-    }
-
-    private void EnableComponents() {
-        _attacker.Enable();
-        _mover.Enable();
-        _rotator.Enable();
-        _damageabler.Enable();
-        _deathabler.Enable();
-        _stunnabler.Enable();
-    }
+    private void OnDeath() => TranslateTo<PlayerLoseState>();
 }
