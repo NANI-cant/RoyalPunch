@@ -17,10 +17,11 @@ public class Health : MonoBehaviour, IDamageable, IDeathable {
     }
 
     public void TakeDamage(float damage) {
-        if (_currentHealth < damage) return;
+        if (_currentHealth <= 0) return;
 
         this.Log(this + " Took " + damage + " damage, now " + _currentHealth + "/" + _maxHealth + " health", when: _shouldLog);
-        _currentHealth -= damage;
+        float takedHealth = Mathf.Min(damage, _currentHealth);
+        _currentHealth -= takedHealth;
         OnDamageTaked?.Invoke(new TakeDamageResult(_maxHealth, _currentHealth, damage));
         if (_currentHealth <= 0) {
             Die();

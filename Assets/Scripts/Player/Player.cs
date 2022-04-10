@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Infrastructure;
 using UnityEngine;
 using Zenject;
 
@@ -11,6 +12,7 @@ using Zenject;
 [RequireComponent(typeof(IStunnable))]
 [RequireComponent(typeof(PlayerAvatar))]
 public class Player : MonoBehaviour, IStateMachine {
+    [Header("Debug")]
     [SerializeField] private bool _shouldLog;
 
     private Transform _lookAtThis;
@@ -22,14 +24,16 @@ public class Player : MonoBehaviour, IStateMachine {
     private IDeathable _deathabler;
     private IStunnable _stunnabler;
     private PlayerAvatar _avatar;
+    private Game _game;
 
     private IState _activeState;
     private Dictionary<Type, IState> _states = new Dictionary<Type, IState>();
 
     [Inject]
-    private void Constructor(IInputService input, Enemy enemy) {
+    private void Constructor(IInputService input, Enemy enemy, Game game) {
         _input = input;
         _lookAtThis = enemy.transform;
+        _game = game;
 
         _mover = GetComponent<IMovable>();
         _rotator = GetComponent<IRotateable>();
@@ -40,20 +44,24 @@ public class Player : MonoBehaviour, IStateMachine {
         _avatar = GetComponent<PlayerAvatar>();
 
         _states = new Dictionary<Type, IState> {
+            [typeof(PlayerPrepareState)] = new PlayerPrepareState(this, _avatar, _game),
             [typeof(PlayerFreeState)] = new PlayerFreeState(this, _input, _avatar, _attacker, _rotator, _mover, _lookAtThis, _stunnabler),
             [typeof(PlayerStunState)] = new PlayerStunState(this, _avatar, _stunnabler),
-            [typeof(PlayerLoseState)] = new PlayerLoseState(this),
-            [typeof(PlayerWinState)] = new PlayerWinState(this),
+            [typeof(PlayerLoseState)] = new PlayerLoseState(this, _avatar),
+            [typeof(PlayerWinState)] = new PlayerWinState(this, _avatar),
         };
-        TranslateTo<PlayerFreeState>();
+        TranslateTo<PlayerPrepareState>();
     }
 
     private void OnEnable() {
-        _deathabler.OnDeath += OnDeath;
+        _game.OnGameLoose += OnGameLoose;
+        _game.OnGameWin += OnGameWin;
     }
 
+
     private void OnDisable() {
-        _deathabler.OnDeath -= OnDeath;
+        _game.OnGameLoose -= OnGameLoose;
+        _game.OnGameWin -= OnGameWin;
     }
 
     private void Update() {
@@ -88,5 +96,6 @@ public class Player : MonoBehaviour, IStateMachine {
         );
     }
 
-    private void OnDeath() => TranslateTo<PlayerLoseState>();
+    private void OnGameWin() => TranslateTo<PlayerWinState>();
+    private void OnGameLoose() => TranslateTo<PlayerLoseState>();
 }

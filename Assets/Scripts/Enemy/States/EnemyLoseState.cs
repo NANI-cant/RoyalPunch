@@ -1,8 +1,8 @@
-public class PlayerLoseState : IEnterState {
+public class EnemyLoseState : IEnterState {
     private IStateMachine _stateMachine;
-    private PlayerAvatar _avatar;
+    private EnemyAvatar _avatar;
 
-    public PlayerLoseState(IStateMachine stateMachine, PlayerAvatar avatar) {
+    public EnemyLoseState(IStateMachine stateMachine, EnemyAvatar avatar) {
         _stateMachine = stateMachine;
         _avatar = avatar;
     }

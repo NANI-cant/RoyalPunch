@@ -42,24 +42,26 @@ public class Enemy : MonoBehaviour, IStateMachine {
         _spellHandler = GetComponent<SpellHandler>();
 
         _states = new Dictionary<Type, IState> {
+            [typeof(EnemyPrepareState)] = new EnemyPrepareState(this, game),
             [typeof(EnemyIdleState)] = new EnemyIdleState(this, _lookAtIt, _rotator, _attacker, _avatar, _spellHandler),
             [typeof(EnemyCastSpellState)] = new EnemyCastSpellState(this, _spellHandler, _stunnabler),
             [typeof(EnemyStunState)] = new EnemyStunState(this, _avatar, _stunnabler),
             [typeof(EnemyWinState)] = new EnemyWinState(this),
+            [typeof(EnemyLoseState)] = new EnemyLoseState(this, _avatar),
         };
+        TranslateTo<EnemyPrepareState>();
     }
 
     private void OnEnable() {
         _game.OnGameLoose += OnGameLoose;
+        _game.OnGameWin += OnGameWin;
     }
 
     private void OnDisable() {
         _game.OnGameLoose -= OnGameLoose;
+        _game.OnGameWin -= OnGameWin;
     }
 
-    private void Start() {
-        TranslateTo<EnemyIdleState>();
-    }
 
     private void Update() {
         _activeState?.Do(
@@ -93,5 +95,6 @@ public class Enemy : MonoBehaviour, IStateMachine {
         );
     }
 
+    private void OnGameWin() => TranslateTo<EnemyLoseState>();
     private void OnGameLoose() => TranslateTo<EnemyWinState>();
 }
