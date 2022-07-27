@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using Infrastructure;
 using UnityEngine;
 using UnityEngine.Events;
 using Zenject;
-
-enum EnemyState {
-    Idle,
-    CastSpell,
-    Stun
-}
 
 [RequireComponent(typeof(IDamageable))]
 [RequireComponent(typeof(IDeathable))]
@@ -18,9 +12,12 @@ enum EnemyState {
 [RequireComponent(typeof(EnemyAvatar))]
 [RequireComponent(typeof(SpellHandler))]
 [RequireComponent(typeof(IStunnable))]
-public class Enemy : MonoBehaviour {
+public class Enemy : MonoBehaviour, IStateMachine {
+    [SerializeField] private bool _shouldLog = false;
+
     private Transform _lookAtIt;
 
+    private Game _game;
     private IDamageable _damageabler;
     private IDeathable _deathabler;
     private IRotateable _rotator;
@@ -29,12 +26,12 @@ public class Enemy : MonoBehaviour {
     private EnemyAvatar _avatar;
     private SpellHandler _spellHandler;
 
-    private EnemyState _currentState;
-    private UnityAction _transitionToStun;
-    private UnityAction _transitionToIdle;
+    private IState _activeState;
+    private Dictionary<Type, IState> _states;
 
     [Inject]
-    private void Constructor(Player player) {
+    private void Constructor(Player player, Game game) {
+        _game = game;
         _lookAtIt = player.transform;
         _damageabler = GetComponent<IDamageable>();
         _deathabler = GetComponent<IDeathable>();
@@ -44,59 +41,60 @@ public class Enemy : MonoBehaviour {
         _avatar = GetComponent<EnemyAvatar>();
         _spellHandler = GetComponent<SpellHandler>();
 
-        _transitionToStun = () => TranslateTo(EnemyState.Stun);
-        _transitionToIdle = () => TranslateTo(EnemyState.Idle);
+        _states = new Dictionary<Type, IState> {
+            [typeof(EnemyPrepareState)] = new EnemyPrepareState(this, game),
+            [typeof(EnemyIdleState)] = new EnemyIdleState(this, _lookAtIt, _rotator, _attacker, _avatar, _spellHandler),
+            [typeof(EnemyCastSpellState)] = new EnemyCastSpellState(this, _spellHandler, _stunnabler),
+            [typeof(EnemyStunState)] = new EnemyStunState(this, _avatar, _stunnabler),
+            [typeof(EnemyWinState)] = new EnemyWinState(this),
+            [typeof(EnemyLoseState)] = new EnemyLoseState(this, _avatar),
+        };
+        TranslateTo<EnemyPrepareState>();
     }
 
     private void OnEnable() {
-        _spellHandler.OnCastEnd += _stunnabler.Stun;
-        _stunnabler.OnStunStart += _transitionToStun;
-        _stunnabler.OnStunEnd += _transitionToIdle;
+        _game.OnGameLoose += OnGameLoose;
+        _game.OnGameWin += OnGameWin;
     }
 
     private void OnDisable() {
-        _spellHandler.OnCastEnd -= _stunnabler.Stun;
-        _stunnabler.OnStunStart -= _transitionToStun;
-        _stunnabler.OnStunEnd -= _transitionToIdle;
+        _game.OnGameLoose -= OnGameLoose;
+        _game.OnGameWin -= OnGameWin;
     }
 
-    private void Start() {
-        EnterState(EnemyState.Idle);
+
+    private void Update() {
+        _activeState?.Do(
+            () => ((IUpdateState)_activeState).Update(),
+            when: _activeState is IUpdateState
+        );
     }
 
     private void FixedUpdate() {
-        if (_currentState == EnemyState.Idle) {
-            _rotator.RotateTo(_lookAtIt.position);
-
-            if (_attacker.CouldAttack) {
-                _attacker.Attack();
-                _avatar.PlayAttack();
-            }
-
-            if (_spellHandler.CouldCast()) {
-                _spellHandler.CastRandom();
-                TranslateTo(EnemyState.CastSpell);
-            }
-        }
+        _activeState?.Do(
+            () => ((IFixedUpdateState)_activeState).FixedUpdate(),
+            when: _activeState is IFixedUpdateState
+        );
     }
 
-    private void TranslateTo(EnemyState state) {
-        ExitState(_currentState);
-        _currentState = state;
-        EnterState(_currentState);
+    public void TranslateTo<TState>() where TState : IState {
+        _activeState?.Do(
+            () => {
+                ((IExitState)_activeState).Exit();
+                this.Log("Exit " + _activeState, _shouldLog);
+            },
+            when: _activeState is IExitState
+        );
+        _activeState = _states[typeof(TState)];
+        _activeState.Do(
+            () => {
+                ((IEnterState)_activeState).Enter();
+                this.Log("Enter " + _activeState, _shouldLog);
+            },
+            when: _activeState is IEnterState
+        );
     }
 
-    private void EnterState(EnemyState state) {
-        switch (state) {
-            case EnemyState.Stun: {
-                    _avatar.PlayStun();
-                    break;
-                }
-            default: { break; }
-        }
-    }
-
-    private void ExitState(EnemyState state) {
-
-    }
+    private void OnGameWin() => TranslateTo<EnemyLoseState>();
+    private void OnGameLoose() => TranslateTo<EnemyWinState>();
 }

@@ -13,19 +13,8 @@ namespace CameraLogic {
         [SerializeField] private Transform _followIt;
         [SerializeField] private Vector3 _followOffset;
 
-#if UNITY_EDITOR
-        [Header("Debug")]
-        [SerializeField] private bool _isValidate;
-
-        private void OnValidate() {
-            if (!_isValidate) return;
-
-            if (_lookAt != null)
-                RotateTo(_lookAt.position);
-            if (_followIt != null)
-                MoveTo(_followIt.position);
-        }
-#endif
+        public Vector3 CalculatedPosition => _followIt.position + _followIt.transform.rotation * _followOffset;
+        public Quaternion CalculatedRotation => Quaternion.LookRotation((_lookAt.transform.position - CalculatedPosition).normalized, Vector3.up) * Quaternion.Euler(new Vector3(-_angleOffset, 0f, 0f));
 
         [Inject]
         private void Constructor(Player player, Enemy enemy) {
@@ -33,21 +22,13 @@ namespace CameraLogic {
             _lookAt = enemy.transform;
         }
 
-        private void Update() {
-            RotateTo(_lookAt.position);
-        }
-
-        private void FixedUpdate() {
-            MoveTo(_followIt.position);
-        }
-
-        private void RotateTo(Vector3 point) {
-            transform.LookAt(point);
+        public void Rotate() {
+            transform.LookAt(_lookAt.position);
             transform.Rotate(new Vector3(-_angleOffset, 0f, 0f));
         }
 
-        private void MoveTo(Vector3 point) {
-            transform.position = point + _followIt.transform.rotation * _followOffset;
+        public void Move() {
+            transform.position = _followIt.position + _followIt.transform.rotation * _followOffset;
         }
     }
 }

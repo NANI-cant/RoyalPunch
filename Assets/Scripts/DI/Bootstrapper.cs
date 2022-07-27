@@ -7,6 +7,7 @@ public class Bootstrapper : MonoInstaller {
     [Header("UI")]
     [SerializeField] private Joystick _joystick;
     [SerializeField] private StartPanel _startPanel;
+    [SerializeField] private EndGamePanel _endGamePanel;
 
     [Header("Gameplay")]
     [SerializeField] private Player _player;
@@ -21,7 +22,7 @@ public class Bootstrapper : MonoInstaller {
         RegisterInstanceSingle<Camera>(_mainCamera);
         RegisterInstanceSingle<Player>(_player);
         RegisterInstanceSingle<Enemy>(_enemy);
-        RegisterInstanceSingle<Game>(new Game(_player, _enemy, _startPanel, inputService));
+        RegisterInstanceSingle<Game>(new Game(_player, _enemy, _startPanel, _endGamePanel, inputService));
     }
 
     private T RegisterInstanceSingle<T>(T instance) {

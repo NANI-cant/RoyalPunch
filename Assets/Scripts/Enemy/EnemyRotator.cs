@@ -12,6 +12,7 @@ public class EnemyRotator : MonoBehaviour, IRotateable {
     }
 
     public void RotateTo(Vector3 point) {
+        point.y = transform.position.y;
         Vector3 directionToPoint = (point - _transform.position).normalized;
         Quaternion targetQuaternion = Quaternion.LookRotation(directionToPoint, Vector3.up);
         _transform.rotation = Quaternion.Lerp(_transform.rotation, targetQuaternion, _angularSpeed * Mathf.Deg2Rad * Time.deltaTime);

@@ -12,12 +12,13 @@ namespace Infrastructure {
             Player player,
             Enemy enemy,
             StartPanel startPanel,
+            EndGamePanel endGamePanel,
             IInputService inputService) {
             _states = new Dictionary<Type, IState> {
-                [typeof(GamePreparingState)] = new GamePreparingState(this, game, startPanel, inputService),
+                [typeof(GamePreparingState)] = new GamePreparingState(this, game, startPanel, endGamePanel, inputService),
                 [typeof(GameplayState)] = new GameplayState(this, game, player, enemy, inputService),
-                [typeof(GameLoseState)] = new GameLoseState(this, game, inputService),
-                [typeof(GameWinState)] = new GameWinState(this, game, inputService),
+                [typeof(GameLoseState)] = new GameLoseState(this, game, inputService, endGamePanel),
+                [typeof(GameWinState)] = new GameWinState(this, game, inputService, endGamePanel),
             };
         }
 

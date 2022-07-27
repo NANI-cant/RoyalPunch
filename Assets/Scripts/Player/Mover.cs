@@ -23,6 +23,7 @@ public class Mover : MonoBehaviour, IMovable, IRotateable {
     }
 
     public void RotateTo(Vector3 point) {
+        point.y = transform.position.y;
         _transform.LookAt(point);
     }
 
